@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Sekolah Terpadu (SST)</title>
+  <!-- Tailwind CSS & FontAwesome CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- HEADER / NAVBAR UTAMA -->
+  <header class="bg-[#0b3c5d] text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center font-black text-xl shadow-inner">
+          <i class="fa-solid fa-school text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-base md:text-lg leading-tight">Sistem Sekolah Terpadu</h1>
+          <p id="app-school-name" class="text-xs text-slate-300 truncate">Memuat nama sekolah...</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span id="academic-year-badge" class="hidden sm:inline-block text-xs font-semibold bg-blue-900/80 px-3 py-1 rounded-full border border-blue-400/30">
+          TA 2026/2027
+        </span>
+        <button onclick="toggleModal('modal-settings')" class="p-2 bg-blue-700/50 hover:bg-blue-600 rounded-xl transition text-white" title="Pengaturan Sekolah">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- KONTEN UTAMA -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+    <!-- HERO / BANNER PUSAT KENDALI -->
+    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+      <div class="relative z-10 max-w-2xl space-y-2">
+        <span class="px-3 py-1 bg-blue-500/30 border border-blue-400/30 text-blue-200 rounded-full text-xs font-bold uppercase tracking-wider">Portal Satu Pintu</span>
+        <h2 class="text-2xl md:text-3xl font-black">Selamat Datang di Portal Terpadu Sekolah</h2>
+        <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+          Pusat layanan akademik, presensi siswa, manajemen perpustakaan digital, serta tata kelola administrasi sekolah dalam satu basis data terintegrasi.
+        </p>
+      </div>
+    </div>
+
+    <!-- METRIK STATISTIK SINGKAT -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-users text-lg"></i>
+        </div>
+        <div>
+          <span class="block text-[10px] text-slate-500 font-bold uppercase">Total Siswa</span>
+          <span id="stat-siswa" class="text-lg font-black text-slate-800">0</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-book text-lg"></i>
+        </div>
+        <div>
+          <span class="block text-[10px] text-slate-500 font-bold uppercase">Koleksi Buku</span>
+          <span id="stat-buku" class="text-lg font-black text-slate-800">0</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-clipboard-user text-lg"></i>
+        </div>
+        <div>
+          <span class="block text-[10px] text-slate-500 font-bold uppercase">Presensi Hari Ini</span>
+          <span id="stat-absensi" class="text-lg font-black text-slate-800">0</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
+        </div>
+        <div>
+          <span class="block text-[10px] text-slate-500 font-bold uppercase">Kas/SPP Siswa</span>
+          <span class="text-lg font-black text-slate-800">Aktif</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID MODUL UTAMA SEKOLAH -->
+    <div>
+      <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-cubes text-blue-600"></i> Modul Aplikasi Terintegrasi
+      </h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <!-- 1. MODUL ABSENSI SISWA (APP TERPISAH) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-teal-500 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900">Presensi & Absensi Siswa</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Aplikasi pemindai QR Code untuk presensi harian siswa (Mode Pagi & Siang) secara offline-first.
+            </p>
+          </div>
+          <!-- Masukkan URL GitHub Pages aplikasi absensi Anda di atribut href -->
+          <a href="../absensi-siswa/" target="_blank" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition flex items-center justify-center gap-2">
+            <span>Buka Absensi Siswa</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+        </div>
+
+        <!-- 2. PERPUSTAKAAN DIGITAL -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900">Perpustakaan Digital</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Katalog buku fisik, e-book perpustakaan, peminjaman mandiri, dan pelacakan denda keterlambatan.
+            </p>
+          </div>
+          <button onclick="alert('Modul Perpustakaan Digital Siap Diintegrasikan!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
+            Kelola Perpustakaan
+          </button>
+        </div>
+
+        <!-- 3. KEUANGAN & SPP SEKOLAH -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900">Keuangan & SPP Siswa</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Pencatatan tagihan bulanan SPP, riwayat pembayaran siswa, dan cetak kuitansi digital.
+            </p>
+          </div>
+          <button onclick="alert('Modul Keuangan Siap Diintegrasikan!')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
+            Kelola Keuangan
+          </button>
+        </div>
+
+        <!-- 4. E-LEARNING & RAPOR -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900">E-Learning & Rapor Digital</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Manajemen materi pembelajaran, nilai harian, serta pencetakan rekapitulasi nilai rapor siswa.
+            </p>
+          </div>
+          <button onclick="alert('Modul E-Learning & Rapor Siap Diintegrasikan!')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
+            Akses E-Learning
+          </button>
+        </div>
+
+        <!-- 5. BIMBINGAN KONSELING (BK) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900">Bimbingan Konseling (BK)</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Pencatatan poin kedisiplinan, penanganan kasus siswa, dan pembinaan oleh Wali Kelas/BK.
+            </p>
+          </div>
+          <button onclick="alert('Modul BK Siap Diintegrasikan!')" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
+            Layanan BK
+          </button>
+        </div>
+
+        <!-- 6. TRACER STUDY ALUMNI -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fa-solid fa-briefcase"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900">Tracer Study Alumni</h4>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Pendataan penelusuran tamatan alumni (Bekerja, Wirausaha, Lanjut Studi) untuk SMK.
+            </p>
+          </div>
+          <button onclick="alert('Modul Tracer Study Siap Diintegrasikan!')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
+            Tracer Alumni
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL PENGATURAN IDENTITAS SEKOLAH -->
+  <div id="modal-settings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base">Pengaturan Identitas Sekolah</h3>
+        <button onclick="toggleModal('modal-settings')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nama Sekolah</label>
+          <input type="text" id="cfg-school-name" placeholder="Contoh: SMK Negeri 1 Wakatobi" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Tahun Ajaran</label>
+          <input type="text" id="cfg-academic-year" placeholder="Contoh: 2026/2027" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nama Kepala Sekolah</label>
+          <input type="text" id="cfg-principal-name" placeholder="Nama Kepala Sekolah" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">NIP Kepala Sekolah</label>
+          <input type="text" id="cfg-principal-nip" placeholder="NIP Kepala Sekolah" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        </div>
+      </div>
+
+      <button onclick="saveSchoolSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
+        Simpan Identitas Sekolah
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p>&copy; 2026 Sistem Sekolah Terpadu (SST). Bekerja sama dengan Supabase Database Engine.</p>
+  </footer>
+
+  <!-- SCRIPT INTEGRASI SUPABASE & LOGIKA UTAMA -->
+  <script>
+    // 1. INSIALISASI CLIENT SUPABASE (Menggunakan Credential Project Anda)
+    const SUPABASE_URL = "https://zawdzxdqiqseuwzybvsj.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2R6eGRxaXFzZXV3enlidnNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NDcyMjUsImV4cCI6MjEwODQyMzIyNX0.ORKJYY62FiUl8H-sVWuLGp072KkUeudo-lB-a_eqSaM";
+    
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2. FUNGSI LOAD DATA SEKOLAH & STATISTIK
+    async function loadSchoolData() {
+      try {
+        // Load Identitas Sekolah dari Tabel 'pengaturan'
+        const { data: configData } = await db.from('pengaturan').select('*');
+        if (configData && Array.isArray(configData)) {
+          const cfgMap = {};
+          configData.forEach(c => cfgMap[c.kunci] = c.nilai);
+
+          const schoolName = cfgMap.SCHOOL_NAME || "SMK Negeri 1 Wakatobi";
+          const academicYear = cfgMap.ACADEMIC_YEAR || "2026/2027";
+          const principalName = cfgMap.PRINCIPAL_NAME || "";
+          const principalNip = cfgMap.PRINCIPAL_NIP || "";
+
+          document.getElementById('app-school-name').innerText = schoolName;
+          document.getElementById('academic-year-badge').innerText = `TA ${academicYear}`;
+
+          document.getElementById('cfg-school-name').value = schoolName;
+          document.getElementById('cfg-academic-year').value = academicYear;
+          document.getElementById('cfg-principal-name').value = principalName;
+          document.getElementById('cfg-principal-nip').value = principalNip;
+        }
+
+        // Load Ringkasan Jumlah Siswa
+        const { count: totalSiswa } = await db.from('siswa').select('*', { count: 'exact', head: true });
+        document.getElementById('stat-siswa').innerText = totalSiswa || 0;
+
+        // Load Ringkasan Presensi Hari Ini
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { count: totalAbsen } = await db.from('absensi_harian').select('*', { count: 'exact', head: true }).eq('tanggal', todayStr);
+        document.getElementById('stat-absensi').innerText = totalAbsen || 0;
+
+        // Load Ringkasan Buku (Jika tabel perpustakaan_buku sudah dibuat)
+        const { count: totalBuku } = await db.from('perpustakaan_buku').select('*', { count: 'exact', head: true });
+        document.getElementById('stat-buku').innerText = totalBuku || 0;
+
+      } catch (err) {
+        console.error("Gagal memuat data awal:", err);
+      }
+    }
+
+    // 3. FUNGSI SIMPAN PENGATURAN SEKOLAH
+    async function saveSchoolSettings() {
+      const schoolName = document.getElementById('cfg-school-name').value.trim();
+      const academicYear = document.getElementById('cfg-academic-year').value.trim();
+      const principalName = document.getElementById('cfg-principal-name').value.trim();
+      const principalNip = document.getElementById('cfg-principal-nip').value.trim();
+
+      if (!schoolName) return alert("Nama sekolah wajib diisi!");
+
+      const payload = [
+        { kunci: 'SCHOOL_NAME', nilai: schoolName },
+        { kunci: 'ACADEMIC_YEAR', nilai: academicYear },
+        { kunci: 'PRINCIPAL_NAME', nilai: principalName },
+        { kunci: 'PRINCIPAL_NIP', nilai: principalNip }
+      ];
+
+      const { error } = await db.from('pengaturan').upsert(payload, { onConflict: 'kunci' });
+
+      if (!error) {
+        alert("Identitas Sekolah berhasil disimpan!");
+        toggleModal('modal-settings');
+        loadSchoolData();
+      } else {
+        alert("Gagal menyimpan pengaturan: " + error.message);
+      }
+    }
+
+    // 4. TOGGLE MODAL
+    function toggleModal(id) {
+      document.getElementById(id).classList.toggle('hidden');
+    }
+
+    // Dijalankan saat halaman dimuat
+    window.onload = loadSchoolData;
+  </script>
+</body>
+</html>
