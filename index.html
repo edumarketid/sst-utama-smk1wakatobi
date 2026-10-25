@@ -1,330 +1,505 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Sekolah Terpadu (SST)</title>
-  <!-- Tailwind CSS & FontAwesome CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Sekolah Terpadu (SST)</title>
+<!-- LIBRARY QR CODE & SUPABASE SDK -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+.header-app{background:#0b3b82;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 15px rgba(0,0,0,.1)}
+.header-app h1{margin:0;font-size:18px;font-weight:900}
+.header-app p{margin:2px 0 0;font-size:11px;opacity:.8}
+
+/* NAVIGASI TAB MODUL */
+.nav-tabs{display:flex;background:#fff;border-bottom:1px solid #dbe4ef;padding:0 15px;overflow-x:auto}
+.tab-btn{padding:12px 18px;font-size:13px;font-weight:800;color:#64748b;border:0;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tab-btn.active{color:#0b3b82;border-bottom-color:#0b3b82}
+
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* STYLE KARTU & PANEL */
+.card{background:#fff;border:1px solid #dbe4ef;border-radius:16px;padding:18px;box-shadow:0 6px 22px rgba(15,40,80,.08);margin-bottom:16px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;font-size:12px;outline:none}
+.field textarea{resize:vertical;height:65px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;font-size:12px}
+.btn-primary{background:#0b3b82;color:#fff}
+.btn-secondary{background:#e2e8f0;color:#172033}
+.btn-green{background:#16a05d;color:#fff}
+.status{margin-top:10px;font-size:12px;font-weight:bold;color:#64748b}
+.success{color:#166534}.danger{color:#b91c1c}
+
+/* AUTOCOMPLETE & TABEL */
+.suggest-box{position:relative}
+.suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #cbd5e1;border-radius:0 0 9px 9px;max-height:160px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.1);display:none}
+.suggest-item{padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f1f5f9}
+.suggest-item:hover{background:#eef4fb;color:#0b3b82;font-weight:bold}
+table{width:100%;border-collapse:collapse;font-size:11px;border:1px solid #cbd5e1}
+th{background:#eef4fb;color:#0b3b82;padding:9px;text-align:left;border:1px solid #cbd5e1;font-weight:800}
+td{padding:8px;border:1px solid #cbd5e1;vertical-align:middle}
+.badge-poin{display:inline-block;padding:3px 7px;background:#fee2e2;color:#991b1b;border-radius:12px;font-weight:800;font-size:10px}
+
+/* PREVIEW KARTU PELAJAR */
+.cards{display:grid;grid-template-columns:repeat(2,85.6mm);gap:2mm;justify-content:center}
+.card-item{width:85.6mm;height:53.98mm;position:relative;overflow:hidden;background:#fff;flex:none;color:var(--ink,#0b2c63);border:1.3mm solid var(--accent,#0b3b82);border-radius:4mm;box-shadow:0 1.5mm 4mm rgba(15,23,42,.18);page-break-inside:avoid}
+.card-item:before{content:"";position:absolute;left:0;top:0;width:22mm;height:20mm;background:var(--accent,#0b3b82);clip-path:polygon(0 0,100% 0,42% 100%,0 100%)}
+.card-item:after{content:"";position:absolute;right:0;bottom:0;width:22mm;height:18mm;background:var(--accent,#0b3b82);clip-path:polygon(100% 0,100% 100%,0 100%)}
+.accent-stripe{position:absolute;left:4mm;top:0;width:3mm;height:20mm;background:var(--secondary,#f5b700);transform:skewX(-18deg);z-index:2}
+.logo-card{position:absolute;top:2.5mm;width:13mm;height:13mm;object-fit:contain;z-index:3}
+.logo-card.left{left:5mm}
+.logo-card.right{right:5mm}
+.school-card{position:absolute;top:2.8mm;left:19mm;right:19mm;text-align:center;font-size:4.1mm;line-height:1.05;font-weight:900;color:var(--ink,#0b2c63);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:3}
+.title-card{position:absolute;top:10mm;left:19mm;right:19mm;height:7mm;background:var(--accent,#0b3b82);border-radius:5mm;text-align:center;color:#fff;font-size:3.1mm;font-weight:900;line-height:7mm;z-index:3}
+.photo-card{position:absolute;left:3.8mm;top:18.2mm;width:17mm;height:23mm;border:0.5mm solid var(--accent,#0b3b82);border-radius:2mm;padding:1mm;z-index:3;background:#fff}
+.photo-in{width:100%;height:100%;border:0.3mm solid #cbd5e1;border-radius:1.5mm;background:#f8fafc;display:flex;align-items:center;justify-content:center;color:#789;font-size:3mm;font-weight:800}
+.details-card{position:absolute;left:23.5mm;top:17.8mm;right:25mm;z-index:3}
+.lbl-card{font-size:1.85mm;font-weight:900;color:var(--accent,#0b3b82);margin-bottom:.3mm}
+.val-card{font-size:2.2mm;font-weight:800;color:#111827;margin-bottom:1.4mm;white-space:nowrap;line-height:1.0}
+.qr-card{position:absolute;right:3.7mm;top:18.4mm;width:25mm;height:25mm;background:#fff;display:flex;align-items:center;justify-content:center;z-index:4}
+.qr-card canvas,.qr-card img{width:25mm!important;height:25mm!important}
+
+@media screen and (max-width: 768px) {
+  .row,.row3{grid-template-columns:1fr}
+  .cards{display:flex;flex-direction:column;align-items:center}
+}
+
+@media print{
+  .no-print,.header-app,.nav-tabs{display:none!important}
+  body{background:#fff!important}
+  .wrap{padding:0;max-width:none}
+  .page{width:210mm;min-height:297mm;display:grid;grid-template-columns:repeat(2,85.6mm);grid-template-rows:repeat(5,53.98mm);gap:1mm 2mm;justify-content:center;page-break-after:always}
+  @page{size:A4 portrait;margin:0}
+}
+</style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
+<body>
 
-  <!-- HEADER / NAVBAR UTAMA -->
-  <header class="bg-[#0b3c5d] text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center font-black text-xl shadow-inner">
-          <i class="fa-solid fa-school text-white"></i>
-        </div>
-        <div>
-          <h1 class="font-extrabold text-base md:text-lg leading-tight">Sistem Sekolah Terpadu</h1>
-          <p id="app-school-name" class="text-xs text-slate-300 truncate">Memuat nama sekolah...</p>
-        </div>
-      </div>
-      <div class="flex items-center space-x-3">
-        <span id="academic-year-badge" class="hidden sm:inline-block text-xs font-semibold bg-blue-900/80 px-3 py-1 rounded-full border border-blue-400/30">
-          TA 2026/2027
-        </span>
-        <button onclick="toggleModal('modal-settings')" class="p-2 bg-blue-700/50 hover:bg-blue-600 rounded-xl transition text-white" title="Pengaturan Sekolah">
-          <i class="fa-solid fa-gear"></i>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- KONTEN UTAMA -->
-  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
-
-    <!-- HERO / BANNER PUSAT KENDALI -->
-    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
-      <div class="relative z-10 max-w-2xl space-y-2">
-        <span class="px-3 py-1 bg-blue-500/30 border border-blue-400/30 text-blue-200 rounded-full text-xs font-bold uppercase tracking-wider">Portal Satu Pintu</span>
-        <h2 class="text-2xl md:text-3xl font-black">Selamat Datang di Portal Terpadu Sekolah</h2>
-        <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
-          Pusat layanan akademik, presensi siswa, manajemen perpustakaan digital, serta tata kelola administrasi sekolah dalam satu basis data terintegrasi.
-        </p>
-      </div>
-    </div>
-
-    <!-- METRIK STATISTIK SINGKAT -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-users text-lg"></i>
-        </div>
-        <div>
-          <span class="block text-[10px] text-slate-500 font-bold uppercase">Total Siswa</span>
-          <span id="stat-siswa" class="text-lg font-black text-slate-800">0</span>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-book text-lg"></i>
-        </div>
-        <div>
-          <span class="block text-[10px] text-slate-500 font-bold uppercase">Koleksi Buku</span>
-          <span id="stat-buku" class="text-lg font-black text-slate-800">0</span>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-clipboard-user text-lg"></i>
-        </div>
-        <div>
-          <span class="block text-[10px] text-slate-500 font-bold uppercase">Presensi Hari Ini</span>
-          <span id="stat-absensi" class="text-lg font-black text-slate-800">0</span>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
-        </div>
-        <div>
-          <span class="block text-[10px] text-slate-500 font-bold uppercase">Kas/SPP Siswa</span>
-          <span class="text-lg font-black text-slate-800">Aktif</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- GRID MODUL UTAMA SEKOLAH -->
-    <div>
-      <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-        <i class="fa-solid fa-cubes text-blue-600"></i> Modul Aplikasi Terintegrasi
-      </h3>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        
-        <!-- 1. MODUL ABSENSI SISWA (APP TERPISAH) -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-teal-500 text-white flex items-center justify-center text-xl shadow-md">
-              <i class="fa-solid fa-qrcode"></i>
-            </div>
-            <h4 class="font-bold text-base text-slate-900">Presensi & Absensi Siswa</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Aplikasi pemindai QR Code untuk presensi harian siswa (Mode Pagi & Siang) secara offline-first.
-            </p>
-          </div>
-          <!-- Masukkan URL GitHub Pages aplikasi absensi Anda di atribut href -->
-          <a href="https://edumarketid.github.io/absensi-siswa/" target="_blank" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition flex items-center justify-center gap-2">
-            <span>Buka Absensi Siswa</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-          </a>
-        </div>
-
-        <!-- 2. PERPUSTAKAAN DIGITAL -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md">
-              <i class="fa-solid fa-book-bookmark"></i>
-            </div>
-            <h4 class="font-bold text-base text-slate-900">Perpustakaan Digital</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Katalog buku fisik, e-book perpustakaan, peminjaman mandiri, dan pelacakan denda keterlambatan.
-            </p>
-          </div>
-          <button onclick="alert('Modul Perpustakaan Digital Siap Diintegrasikan!')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
-            Kelola Perpustakaan
-          </button>
-        </div>
-
-        <!-- 3. KEUANGAN & SPP SEKOLAH -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shadow-md">
-              <i class="fa-solid fa-wallet"></i>
-            </div>
-            <h4 class="font-bold text-base text-slate-900">Keuangan & SPP Siswa</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Pencatatan tagihan bulanan SPP, riwayat pembayaran siswa, dan cetak kuitansi digital.
-            </p>
-          </div>
-          <button onclick="alert('Modul Keuangan Siap Diintegrasikan!')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
-            Kelola Keuangan
-          </button>
-        </div>
-
-        <!-- 4. E-LEARNING & RAPOR -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-md">
-              <i class="fa-solid fa-graduation-cap"></i>
-            </div>
-            <h4 class="font-bold text-base text-slate-900">E-Learning & Rapor Digital</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Manajemen materi pembelajaran, nilai harian, serta pencetakan rekapitulasi nilai rapor siswa.
-            </p>
-          </div>
-          <button onclick="alert('Modul E-Learning & Rapor Siap Diintegrasikan!')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
-            Akses E-Learning
-          </button>
-        </div>
-
-        <!-- 5. BIMBINGAN KONSELING (BK) -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-xl shadow-md">
-              <i class="fa-solid fa-user-shield"></i>
-            </div>
-            <h4 class="font-bold text-base text-slate-900">Bimbingan Konseling (BK)</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Pencatatan poin kedisiplinan, penanganan kasus siswa, dan pembinaan oleh Wali Kelas/BK.
-            </p>
-          </div>
-          <button onclick="alert('Modul BK Siap Diintegrasikan!')" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
-            Layanan BK
-          </button>
-        </div>
-
-        <!-- 6. TRACER STUDY ALUMNI -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4">
-          <div class="space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center text-xl shadow-md">
-              <i class="fa-solid fa-briefcase"></i>
-            </div>
-            <h4 class="font-bold text-base text-slate-900">Tracer Study Alumni</h4>
-            <p class="text-xs text-slate-500 leading-relaxed">
-              Pendataan penelusuran tamatan alumni (Bekerja, Wirausaha, Lanjut Studi) untuk SMK.
-            </p>
-          </div>
-          <button onclick="alert('Modul Tracer Study Siap Diintegrasikan!')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs text-center shadow transition">
-            Tracer Alumni
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </main>
-
-  <!-- MODAL PENGATURAN IDENTITAS SEKOLAH -->
-  <div id="modal-settings" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 text-base">Pengaturan Identitas Sekolah</h3>
-        <button onclick="toggleModal('modal-settings')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Nama Sekolah</label>
-          <input type="text" id="cfg-school-name" placeholder="Contoh: SMK Negeri 1 Wakatobi" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Tahun Ajaran</label>
-          <input type="text" id="cfg-academic-year" placeholder="Contoh: 2026/2027" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Nama Kepala Sekolah</label>
-          <input type="text" id="cfg-principal-name" placeholder="Nama Kepala Sekolah" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">NIP Kepala Sekolah</label>
-          <input type="text" id="cfg-principal-nip" placeholder="NIP Kepala Sekolah" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        </div>
-      </div>
-
-      <button onclick="saveSchoolSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">
-        Simpan Identitas Sekolah
-      </button>
-    </div>
+<header class="header-app no-print">
+  <div>
+    <h1>SISTEM SEKOLAH TERPADU (SST)</h1>
+    <p>Aplikasi Administrasi, Kartu Pelajar, Laporan Absensi & Poin Kedisiplinan Siswa</p>
   </div>
+</header>
 
-  <!-- FOOTER -->
-  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-    <p>&copy; 2026 Sistem Sekolah Terpadu (SST). Bekerja sama dengan Supabase Database Engine.</p>
-  </footer>
+<nav class="nav-tabs no-print">
+  <button class="tab-btn active" onclick="bukaTab('tabPiket')">Guru Piket & Poin</button>
+  <button class="tab-btn" onclick="bukaTab('tabKartu')">Cetak Kartu QR Code</button>
+  <button class="tab-btn" onclick="bukaTab('tabLaporan')">Laporan Absensi</button>
+</nav>
 
-  <!-- SCRIPT INTEGRASI SUPABASE & LOGIKA UTAMA -->
-  <script>
-    // 1. INSIALISASI CLIENT SUPABASE (Menggunakan Credential Project Anda)
-    const SUPABASE_URL = "https://zawdzxdqiqseuwzybvsj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inphd2R6eGRxaXFzZXV3enlidnNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NDcyMjUsImV4cCI6MjEwODQyMzIyNX0.ORKJYY62FiUl8H-sVWuLGp072KkUeudo-lB-a_eqSaM";
-    
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<div class="wrap">
 
-    // 2. FUNGSI LOAD DATA SEKOLAH & STATISTIK
-    async function loadSchoolData() {
-      try {
-        // Load Identitas Sekolah dari Tabel 'pengaturan'
-        const { data: configData } = await db.from('pengaturan').select('*');
-        if (configData && Array.isArray(configData)) {
-          const cfgMap = {};
-          configData.forEach(c => cfgMap[c.kunci] = c.nilai);
+  <!-- ================= TAB 1: GURU PIKET & POIN KEDISIPLINAN ================= -->
+  <section id="tabPiket" class="tab-content active">
+    <div class="card">
+      <h2 style="margin:0 0 10px;color:#0b3b82;font-size:16px">Catat Poin Kedisiplinan Siswa</h2>
+      <form id="formPoin" onsubmit="simpanPoin(event)">
+        <div class="row">
+          <div class="field"><label>Tanggal Kejadian</label><input type="date" id="piketTanggal" required></div>
+          <div class="field"><label>Nama Guru / Pelapor</label><input type="text" id="piketPelapor" placeholder="Nama Guru Piket" required></div>
+        </div>
+        <div class="field suggest-box">
+          <label>Cari Nama / ID / Kelas Siswa</label>
+          <input type="text" id="piketCariSiswa" placeholder="Ketik nama atau kelas..." autocomplete="off" oninput="filterSiswaPiket()" required>
+          <div id="piketSuggestions" class="suggestions"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>ID Siswa</label><input type="text" id="piketIdSiswa" readonly style="background:#f1f5f9"></div>
+          <div class="field"><label>Kelas</label><input type="text" id="piketKelasSiswa" readonly style="background:#f1f5f9"></div>
+        </div>
+        <div class="field">
+          <label>Jenis Pelanggaran / Aturan</label>
+          <select id="piketMasterPoin" onchange="updateBobotPoin()" required>
+            <option value="">-- Pilih Jenis Pelanggaran --</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field"><label>Bobot Poin</label><input type="number" id="piketPoin" readonly style="background:#f1f5f9;font-weight:bold;color:#b91c1c"></div>
+          <div class="field">
+            <label>Status Tindak Lanjut</label>
+            <select id="piketStatusTindak">
+              <option value="Selesai">Selesai di Piket</option>
+              <option value="Diproses BK">Diproses BK</option>
+              <option value="Sp1">Surat Peringatan 1 (SP1)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Keterangan Kronologi</label><textarea id="piketKeterangan" placeholder="Rincian kronologi singkat..."></textarea></div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Simpan Laporan Poin</button>
+        <div id="piketStatusInfo" class="status"></div>
+      </form>
+    </div>
 
-          const schoolName = cfgMap.SCHOOL_NAME || "SMK Negeri 1 Wakatobi";
-          const academicYear = cfgMap.ACADEMIC_YEAR || "2026/2027";
-          const principalName = cfgMap.PRINCIPAL_NAME || "";
-          const principalNip = cfgMap.PRINCIPAL_NIP || "";
+    <div class="card">
+      <h3 style="margin:0 0 10px;font-size:14px;color:#0b3b82">Riwayat Poin Pelanggaran Hari Ini</h3>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Waktu</th><th>Siswa</th><th>Kelas</th><th>Pelanggaran</th><th>Poin</th><th>Status</th></tr>
+          </thead>
+          <tbody id="tabelRiwayatPiket">
+            <tr><td colspan="6" style="text-align:center;padding:15px">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
-          document.getElementById('app-school-name').innerText = schoolName;
-          document.getElementById('academic-year-badge').innerText = `TA ${academicYear}`;
+  <!-- ================= TAB 2: CETAK KARTU QR CODE ================= -->
+  <section id="tabKartu" class="tab-content">
+    <div class="card no-print">
+      <h2 style="margin:0 0 10px;color:#0b3b82;font-size:16px">Pengaturan & Cetak Kartu Pelajar</h2>
+      <div class="row">
+        <div>
+          <div class="field"><label>Nama Sekolah</label><input id="kartuNamaSekolah" value=""></div>
+          <div class="field"><label>Warna Tema</label><select id="kartuWarna"><option value="biru">Biru</option><option value="hijau">Hijau</option><option value="merah">Merah</option></select></div>
+        </div>
+        <div>
+          <div class="field"><label>Logo Kiri (Daerah)</label><input type="file" id="kartuLogoKiri" accept="image/*"></div>
+          <div class="field"><label>Logo Kanan (Sekolah)</label><input type="file" id="kartuLogoKanan" accept="image/*"></div>
+        </div>
+      </div>
+      <div class="buttons">
+        <button class="btn btn-primary" onclick="simpanPengaturanKartu()">Simpan Pengaturan</button>
+        <button class="btn btn-green" onclick="window.print()">Cetak Kartu Terpilih</button>
+      </div>
+      <div id="kartuStatus" class="status"></div>
+    </div>
 
-          document.getElementById('cfg-school-name').value = schoolName;
-          document.getElementById('cfg-academic-year').value = academicYear;
-          document.getElementById('cfg-principal-name').value = principalName;
-          document.getElementById('cfg-principal-nip').value = principalNip;
-        }
+    <div class="card no-print">
+      <h3 style="margin:0 0 10px;font-size:14px;color:#0b3b82">Daftar Siswa (Memori Lokal)</h3>
+      <div style="max-height:200px;overflow:auto;border:1px solid #cbd5e1;border-radius:8px" id="kartuDaftarSiswa">
+        <div style="padding:15px;text-align:center">Memuat data siswa...</div>
+      </div>
+      <div class="buttons" style="margin-top:10px">
+        <button class="btn btn-secondary" onclick="pilihSemuaKartu(true)">Pilih Semua</button>
+        <button class="btn btn-secondary" onclick="pilihSemuaKartu(false)">Hapus Semua</button>
+        <button class="btn btn-primary" onclick="buatPreviewKartu()">Tampilkan Kartu</button>
+      </div>
+    </div>
 
-        // Load Ringkasan Jumlah Siswa
-        const { count: totalSiswa } = await db.from('siswa').select('*', { count: 'exact', head: true });
-        document.getElementById('stat-siswa').innerText = totalSiswa || 0;
+    <div id="kartuPrintArea"></div>
+  </section>
 
-        // Load Ringkasan Presensi Hari Ini
-        const todayStr = new Date().toISOString().split('T')[0];
-        const { count: totalAbsen } = await db.from('absensi_harian').select('*', { count: 'exact', head: true }).eq('tanggal', todayStr);
-        document.getElementById('stat-absensi').innerText = totalAbsen || 0;
+  <!-- ================= TAB 3: LAPORAN ABSENSI ================= -->
+  <section id="tabLaporan" class="tab-content">
+    <div class="card no-print">
+      <h2 style="margin:0 0 10px;color:#0b3b82;font-size:16px">Identitas Kop & Filter Laporan</h2>
+      <div class="row">
+        <div class="field"><label>Upload Kop Sekolah</label><input type="file" id="lapKopFile" accept="image/*"></div>
+        <div class="field"><label>Nama Kepala Sekolah</label><input id="lapKepala" placeholder="Nama Kepala Sekolah"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>Tanggal Laporan</label><input type="date" id="lapTanggal"></div>
+        <div class="field"><label>Kelas</label><select id="lapKelas"><option value="">Semua Kelas</option></select></div>
+        <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="buatLaporanServer()">Tampilkan Laporan Server</button></div>
+      </div>
+      <button class="btn btn-secondary" onclick="simpanIdentitasLaporan()">Simpan Kop & Identitas</button>
+      <div id="lapStatus" class="status"></div>
+    </div>
 
-        // Load Ringkasan Buku (Jika tabel perpustakaan_buku sudah dibuat)
-        const { count: totalBuku } = await db.from('perpustakaan_buku').select('*', { count: 'exact', head: true });
-        document.getElementById('stat-buku').innerText = totalBuku || 0;
+    <div class="card">
+      <div id="lapKopCetak" style="text-align:center;margin-bottom:10px"></div>
+      <h2 style="text-align:center;margin:0;color:#0b3b82;font-size:16px">LAPORAN ABSENSI HARIAN SISWA</h2>
+      <div id="lapPeriodeText" style="text-align:center;font-size:12px;margin-bottom:15px;color:#64748b"></div>
 
-      } catch (err) {
-        console.error("Gagal memuat data awal:", err);
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>No.</th><th>NISN</th><th>Nama Siswa</th><th>Absen Pagi</th><th>Status Apel</th><th>Absen Siang</th><th>Keterangan</th></tr>
+          </thead>
+          <tbody id="lapTbody">
+            <tr><td colspan="7" style="text-align:center;padding:15px">Pilih tanggal lalu klik Tampilkan Laporan.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="width:250px;margin:30px 0 0 auto;text-align:left;font-size:12px">
+        <div id="lapTempatTgl"></div>
+        <div>Kepala Sekolah,</div><br><br><br>
+        <b id="lapKepalaCetak">Nama Kepala Sekolah</b>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// SUPABASE CLIENT INITIALIZATION
+const SUPABASE_URL = localStorage.getItem("SUPABASE_URL") || "https://nbwpnhshhpfqtmbwewgk.supabase.co";
+const SUPABASE_ANON_KEY = localStorage.getItem("SUPABASE_ANON_KEY") || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5id3BuaHNoaHBmcXRtYndld2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTQ1ODUsImV4cCI6MjEwNzk5MDU4NX0.2Ah6o8svWPMDEI1O3zOxytNyqBIjED7GXTxowNm1Ai4";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let globalSiswaLokal = [], masterAturanPoin = [], kartuSelected = new Set();
+let logoKiriData = '', logoKananData = '', kopLapData = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('piketTanggal').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('lapTanggal').value = new Date().toISOString().slice(0, 10);
+  
+  muatSiswaLokal();
+  muatMasterAturanPoin();
+  muatRiwayatPiketToday();
+  muatPengaturanServer();
+});
+
+function bukaTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// 1. MEMBACA MASTER SISWA INDEXEDDB LOKAL
+function muatSiswaLokal() {
+  try {
+    const req = indexedDB.open("AbsensiQR_DB", 3);
+    req.onsuccess = (e) => {
+      const db = e.target.result;
+      if (db.objectStoreNames.contains("students")) {
+        const tx = db.transaction("students", "readonly");
+        tx.objectStore("students").getAll().onsuccess = (ev) => {
+          globalSiswaLokal = (ev.target.result || []).map(s => ({
+            id_siswa: String(s.id_siswa).trim(),
+            nama: s.nama || "-",
+            nisn: s.nisn || "-",
+            kelas: s.kelas || "-"
+          })).sort((a,b) => a.nama.localeCompare(b.nama));
+
+          renderDaftarSiswaKartu();
+          populasiFilterKelas();
+        };
       }
+    };
+  } catch(err) { console.error("Gagal baca IndexedDB:", err); }
+}
+
+// 2. MODUL GURU PIKET & POIN
+async function muatMasterAturanPoin() {
+  try {
+    const { data } = await supabaseClient.from('master_poin').select('*').order('kode_aturan');
+    masterAturanPoin = data || [];
+    const sel = document.getElementById('piketMasterPoin');
+    sel.innerHTML = '<option value="">-- Pilih Jenis Pelanggaran --</option>';
+    masterAturanPoin.forEach(m => {
+      sel.insertAdjacentHTML('beforeend', `<option value="${m.id}">${m.kode_aturan} - ${m.jenis_kejadian} (+${m.bobot_poin} Poin)</option>`);
+    });
+  } catch(e) {}
+}
+
+function filterSiswaPiket() {
+  const q = document.getElementById('piketCariSiswa').value.trim().toLowerCase();
+  const box = document.getElementById('piketSuggestions');
+  if (q.length < 2) { box.style.display = 'none'; return; }
+
+  const match = globalSiswaLokal.filter(s => (s.nama + ' ' + s.kelas + ' ' + s.id_siswa).toLowerCase().includes(q)).slice(0, 8);
+  if (!match.length) { box.style.display = 'none'; return; }
+
+  box.innerHTML = match.map(s => `
+    <div class="suggest-item" onclick="pilihSiswaPiket('${s.id_siswa}', '${s.nama.replace(/'/g, "\\'")}', '${s.kelas}')">
+      <b>${s.nama}</b> (${s.kelas}) - ID: ${s.id_siswa}
+    </div>
+  `).join('');
+  box.style.display = 'block';
+}
+
+function pilihSiswaPiket(id, nama, kelas) {
+  document.getElementById('piketIdSiswa').value = id;
+  document.getElementById('piketCariSiswa').value = nama;
+  document.getElementById('piketKelasSiswa').value = kelas;
+  document.getElementById('piketSuggestions').style.display = 'none';
+}
+
+function updateBobotPoin() {
+  const m = masterAturanPoin.find(x => x.id === document.getElementById('piketMasterPoin').value);
+  document.getElementById('piketPoin').value = m ? m.bobot_poin : 0;
+}
+
+async function simpanPoin(e) {
+  e.preventDefault();
+  const st = document.getElementById('piketStatusInfo');
+  st.className = 'status'; st.textContent = 'Menyimpan ke Server...';
+
+  const m = masterAturanPoin.find(x => x.id === document.getElementById('piketMasterPoin').value);
+  const payload = {
+    tanggal: document.getElementById('piketTanggal').value,
+    id_siswa: document.getElementById('piketIdSiswa').value,
+    nama_siswa: document.getElementById('piketCariSiswa').value,
+    kelas: document.getElementById('piketKelasSiswa').value,
+    id_master_poin: m ? m.id : null,
+    jenis_kejadian: m ? m.jenis_kejadian : 'Pelanggaran Disiplin',
+    poin: parseInt(document.getElementById('piketPoin').value) || 0,
+    keterangan: document.getElementById('piketKeterangan').value.trim(),
+    pelapor: document.getElementById('piketPelapor').value.trim(),
+    status_tindak_lanjut: document.getElementById('piketStatusTindak').value
+  };
+
+  try {
+    const { error } = await supabaseClient.from('poin_siswa').insert([payload]);
+    if (error) throw error;
+    st.className = 'status success'; st.textContent = 'Berhasil dicatat di Server!';
+    document.getElementById('piketKeterangan').value = '';
+    document.getElementById('piketCariSiswa').value = '';
+    muatRiwayatPiketToday();
+  } catch(err) {
+    st.className = 'status danger'; st.textContent = 'Gagal menyimpan ke Server: ' + err.message;
+  }
+}
+
+async function muatRiwayatPiketToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const { data } = await supabaseClient.from('poin_siswa').select('*').eq('tanggal', today).order('created_at', {ascending:false});
+    const tb = document.getElementById('tabelRiwayatPiket');
+    if (!data || !data.length) { tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:15px">Belum ada catatan hari ini.</td></tr>'; return; }
+    tb.innerHTML = data.map(r => `<tr><td>${r.created_at ? new Date(r.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : '-'}</td><td><b>${r.nama_siswa}</b></td><td>${r.kelas}</td><td>${r.jenis_kejadian}</td><td><span class="badge-poin">+${r.poin}</span></td><td>${r.status_tindak_lanjut}</td></tr>`).join('');
+  } catch(e) {}
+}
+
+// 3. MODUL KARTU PELAJAR
+function renderDaftarSiswaKartu() {
+  const el = document.getElementById('kartuDaftarSiswa');
+  if (!globalSiswaLokal.length) { el.innerHTML = '<div style="padding:15px;text-align:center">Tidak ada siswa.</div>'; return; }
+  el.innerHTML = globalSiswaLokal.map(s => `<label style="display:flex;gap:10px;padding:8px;border-bottom:1px solid #edf2f7;font-size:12px;align-items:center"><input type="checkbox" value="${s.id_siswa}" ${kartuSelected.has(s.id_siswa)?'checked':''} onchange="toggleKartuSiswa('${s.id_siswa}',this.checked)"><span><b>${s.nama}</b> (${s.kelas})</span></label>`).join('');
+}
+
+function toggleKartuSiswa(id, on) { if(on) kartuSelected.add(id); else kartuSelected.delete(id); }
+function pilihSemuaKartu(on) { globalSiswaLokal.forEach(s => on ? kartuSelected.add(s.id_siswa) : kartuSelected.delete(s.id_siswa)); renderDaftarSiswaKartu(); }
+
+function buatPreviewKartu() {
+  const list = globalSiswaLokal.filter(s => kartuSelected.has(s.id_siswa));
+  const area = document.getElementById('kartuPrintArea');
+  if (!list.length) { area.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b">Pilih siswa terlebih dahulu.</div>'; return; }
+  
+  const schoolName = document.getElementById('kartuNamaSekolah').value || 'SMK NEGERI 1 WAKATOBI';
+  let html = '';
+  for (let p = 0; p < list.length; p += 10) {
+    html += '<div class="page">';
+    list.slice(p, p + 10).forEach(s => html += `<div class="card-item"><div class="accent-stripe"></div>${logoKiriData?'<img class="logo-card left" src="'+logoKiriData+'">':''}${logoKananData?'<img class="logo-card right" src="'+logoKananData+'">':''}<div class="school-card">${schoolName}</div><div class="title-card">KARTU PELAJAR</div><div class="photo-card"><div class="photo-in">FOTO</div></div><div class="details-card"><div class="lbl-card">NAMA</div><div class="val-card">${s.nama}</div><div class="lbl-card">NISN</div><div class="val-card">${s.nisn}</div><div class="lbl-card">KELAS</div><div class="val-card">${s.kelas}</div></div><div class="qr-card" id="qr_${s.id_siswa}"></div></div>`);
+    html += '</div>';
+  }
+  area.innerHTML = html;
+  requestAnimationFrame(() => list.forEach(s => {
+    const el = document.getElementById('qr_' + s.id_siswa);
+    if(el) { el.innerHTML = ''; new QRCode(el, { text: s.id_siswa, width: 100, height: 100 }); }
+  }));
+}
+
+// 4. MODUL LAPORAN ABSENSI (SERVER DIRECT)
+function populasiFilterKelas() {
+  const listKelas = [...new Set(globalSiswaLokal.map(s => s.kelas))].filter(Boolean).sort();
+  const sel = document.getElementById('lapKelas');
+  sel.innerHTML = '<option value="">Semua Kelas</option>';
+  listKelas.forEach(k => sel.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`));
+}
+
+async function buatLaporanServer() {
+  const st = document.getElementById('lapStatus');
+  st.className = 'status'; st.textContent = 'Mengambil data dari Server...';
+  const tgl = document.getElementById('lapTanggal').value;
+  const kls = document.getElementById('lapKelas').value;
+
+  try {
+    let q = supabaseClient.from('absensi_harian').select('*').or(`tanggal.eq.${tgl},TANGGAL.eq.${tgl}`);
+    const { data: logs, error } = await q;
+    if (error) throw error;
+
+    st.textContent = '';
+    document.getElementById('lapPeriodeText').textContent = 'Tanggal: ' + tgl + (kls ? ' | Kelas: ' + kls : '');
+
+    const filtered = globalSiswaLokal.filter(s => !kls || s.kelas === kls);
+    const tbody = document.getElementById('lapTbody');
+
+    if(!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:15px">Tidak ada siswa.</td></tr>'; return; }
+
+    tbody.innerHTML = filtered.map((s, i) => {
+      const rec = (logs || []).find(a => String(a.id_siswa || a.ID_SISWA || '').trim().toLowerCase() === s.id_siswa.toLowerCase());
+      const jamPagi = rec ? (rec.jam_pagi || rec.JAM_PAGI || '-') : '-';
+      const stPagi = rec ? (rec.status_pagi || rec.STATUS_PAGI || '-') : '-';
+      const jamSiang = rec ? (rec.jam_siang || rec.JAM_SIANG || '-') : '-';
+      const stAkhir = rec ? (rec.status_akhir || rec.STATUS_AKHIR || 'ALPA') : 'ALPA';
+
+      return `<tr><td>${i+1}</td><td>${s.nisn}</td><td><b>${s.nama}</b></td><td>${jamPagi}</td><td>${stPagi}</td><td>${jamSiang}</td><td><b>${stAkhir}</b></td></tr>`;
+    }).join('');
+
+  } catch(err) {
+    st.className = 'status danger'; st.textContent = 'Gagal memuat laporan dari Server: ' + err.message;
+  }
+}
+
+// 5. SINKRONISASI LOGO & IDENTITAS KE SERVER
+async function muatPengaturanServer() {
+  try {
+    const { data } = await supabaseClient.from('pengaturan').select('*');
+    const s = {};
+    if (data) data.forEach(x => s[x.kunci] = x.nilai);
+
+    document.getElementById('kartuNamaSekolah').value = s.SCHOOL_NAME || 'SMK NEGERI 1 WAKATOBI';
+    document.getElementById('lapKepala').value = s.PRINCIPAL_NAME || '';
+    document.getElementById('lapKepalaCetak').textContent = s.PRINCIPAL_NAME || 'Nama Kepala Sekolah';
+    document.getElementById('lapTempatTgl').textContent = (s.TEMPAT_TTD || 'Wakatobi') + ', ' + new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'});
+
+    const { data: dKiri } = supabaseClient.storage.from('media-sst').getPublicUrl('logo_kiri.png');
+    if(dKiri) logoKiriData = dKiri.publicUrl + '?v=' + Date.now();
+
+    const { data: dKanan } = supabaseClient.storage.from('media-sst').getPublicUrl('logo_kanan.png');
+    if(dKanan) logoKananData = dKanan.publicUrl + '?v=' + Date.now();
+
+    const { data: dKop } = supabaseClient.storage.from('media-sst').getPublicUrl('kop_sekolah.png');
+    if(dKop) {
+      kopLapData = dKop.publicUrl + '?v=' + Date.now();
+      document.getElementById('lapKopCetak').innerHTML = `<img src="${kopLapData}" style="max-height:80px">`;
     }
+  } catch(e) {}
+}
 
-    // 3. FUNGSI SIMPAN PENGATURAN SEKOLAH
-    async function saveSchoolSettings() {
-      const schoolName = document.getElementById('cfg-school-name').value.trim();
-      const academicYear = document.getElementById('cfg-academic-year').value.trim();
-      const principalName = document.getElementById('cfg-principal-name').value.trim();
-      const principalNip = document.getElementById('cfg-principal-nip').value.trim();
+async function simpanPengaturanKartu() {
+  const st = document.getElementById('kartuStatus');
+  st.className = 'status'; st.textContent = 'Menyimpan logo ke Server...';
+  try {
+    const name = document.getElementById('kartuNamaSekolah').value.trim();
+    await supabaseClient.from('pengaturan').upsert([{ kunci: 'SCHOOL_NAME', nilai: name }]);
 
-      if (!schoolName) return alert("Nama sekolah wajib diisi!");
+    const fKiri = document.getElementById('kartuLogoKiri').files[0];
+    const fKanan = document.getElementById('kartuLogoKanan').files[0];
 
-      const payload = [
-        { kunci: 'SCHOOL_NAME', nilai: schoolName },
-        { kunci: 'ACADEMIC_YEAR', nilai: academicYear },
-        { kunci: 'PRINCIPAL_NAME', nilai: principalName },
-        { kunci: 'PRINCIPAL_NIP', nilai: principalNip }
-      ];
+    if (fKiri) await supabaseClient.storage.from('media-sst').upload('logo_kiri.png', fKiri, { upsert: true });
+    if (fKanan) await supabaseClient.storage.from('media-sst').upload('logo_kanan.png', fKanan, { upsert: true });
 
-      const { error } = await db.from('pengaturan').upsert(payload, { onConflict: 'kunci' });
+    st.className = 'status success'; st.textContent = 'Pengaturan & Logo berhasil tersimpan di Server!';
+    muatPengaturanServer();
+  } catch(e) {
+    st.className = 'status danger'; st.textContent = 'Gagal menyimpan ke Server: ' + e.message;
+  }
+}
 
-      if (!error) {
-        alert("Identitas Sekolah berhasil disimpan!");
-        toggleModal('modal-settings');
-        loadSchoolData();
-      } else {
-        alert("Gagal menyimpan pengaturan: " + error.message);
-      }
-    }
+async function simpanIdentitasLaporan() {
+  const st = document.getElementById('lapStatus');
+  st.className = 'status'; st.textContent = 'Menyimpan Kop ke Server...';
+  try {
+    const kpl = document.getElementById('lapKepala').value.trim();
+    await supabaseClient.from('pengaturan').upsert([{ kunci: 'PRINCIPAL_NAME', nilai: kpl }]);
 
-    // 4. TOGGLE MODAL
-    function toggleModal(id) {
-      document.getElementById(id).classList.toggle('hidden');
-    }
+    const fKop = document.getElementById('lapKopFile').files[0];
+    if (fKop) await supabaseClient.storage.from('media-sst').upload('kop_sekolah.png', fKop, { upsert: true });
 
-    // Dijalankan saat halaman dimuat
-    window.onload = loadSchoolData;
-  </script>
+    st.className = 'status success'; st.textContent = 'Kop & Identitas berhasil tersimpan di Server!';
+    muatPengaturanServer();
+  } catch(e) {
+    st.className = 'status danger'; st.textContent = 'Gagal menyimpan ke Server: ' + e.message;
+  }
+}
+</script>
 </body>
 </html>
